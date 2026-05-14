@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import type { Resource, VibeCheck } from './lib/api';
@@ -48,7 +48,7 @@ describe('App', () => {
       name: 'Checkout service',
       description: 'shipped a clean launch',
       sentiment: 'positive',
-      priority: 'low',
+      priority: 'medium',
       createdAt: new Date().toISOString(),
     };
 
@@ -79,11 +79,50 @@ describe('App', () => {
     expect(await screen.findByText('Checkout service')).toBeInTheDocument();
     expect(screen.getByText('shipped a clean launch')).toBeInTheDocument();
 
+    // POST carries the typed values plus the default priority from the segmented control.
     const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
     expect(postCall).toBeTruthy();
     expect(JSON.parse(postCall![1]!.body as string)).toEqual({
       name: 'Checkout service',
       description: 'shipped a clean launch',
+      priority: 'medium',
     });
+  });
+
+  it('deletes a resource when its delete button is clicked', async () => {
+    const created: Resource = {
+      id: 'r1',
+      name: 'Old service',
+      description: 'no longer needed',
+      sentiment: 'neutral',
+      priority: 'low',
+      createdAt: new Date().toISOString(),
+    };
+
+    let deleted = false;
+    const fetchMock = vi.fn((input: string, init?: RequestInit) => {
+      const url = String(input);
+      if (init?.method === 'DELETE') {
+        deleted = true;
+        return Promise.resolve(new Response(null, { status: 204 }));
+      }
+      if (url.endsWith('/api/resources')) {
+        return Promise.resolve(jsonResponse(deleted ? [] : [created]));
+      }
+      return Promise.resolve(jsonResponse(emptyVibe));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByText('Old service')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /delete old service/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Old service')).not.toBeInTheDocument();
+    });
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(true);
   });
 });

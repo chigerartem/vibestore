@@ -1,1 +1,44 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  /* Stronger curves than the CSS defaults — the punch that makes motion feel intentional. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+html {
+  background-color: #fafafa;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+}
+
+/* Reduced motion: keep things readable, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Subtle pulse for the "live" status dot — slow enough to read as a heartbeat, not a flash. */
+@keyframes vibe-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.animate-vibe-pulse {
+  animation: vibe-pulse 2.4s var(--ease-in-out) infinite;
+}
