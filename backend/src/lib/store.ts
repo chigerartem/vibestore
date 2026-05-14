@@ -40,6 +40,10 @@ export const store = {
     return resource;
   },
 
+  delete(id: string): boolean {
+    return resources.delete(id);
+  },
+
   clear(): void {
     resources.clear();
   },

@@ -1,6 +1,9 @@
 /**
  * Mock-AI "vibe" logic — the backend's stand-in for an AI summary service.
- * Pure and deterministic (keywords + length, no randomness) so it's fully unit-testable.
+ *
+ * Sentiment is derived automatically from the description (the "mock AI" tag).
+ * Priority is chosen by the user on the form, so it is not computed here — it
+ * just flows through onto the stored resource and into the aggregate counts.
  */
 
 export type Sentiment = 'positive' | 'neutral' | 'negative';
@@ -20,15 +23,16 @@ export interface VibeCheck {
 }
 
 const POSITIVE = new Set([
-  'done', 'shipped', 'launch', 'launched', 'great', 'love', 'win', 'success',
-  'improve', 'improved', 'fast', 'ready', 'complete', 'completed', 'smooth', 'clean', 'solid',
+  'done', 'shipped', 'ship', 'launch', 'launched', 'great', 'love', 'win', 'wins',
+  'success', 'improve', 'improved', 'fast', 'ready', 'complete', 'completed', 'smooth',
+  'clean', 'solid', 'working', 'works', 'fixed', 'resolved', 'good', 'nice', 'excellent',
+  'stable', 'polished', 'happy', 'progress', 'ahead', 'easy',
 ]);
 const NEGATIVE = new Set([
-  'bug', 'bugs', 'broken', 'blocked', 'fail', 'failed', 'crash', 'crashed', 'error', 'errors',
-  'issue', 'issues', 'delay', 'delayed', 'risk', 'stuck', 'slow', 'messy', 'hard',
-]);
-const URGENT = new Set([
-  'urgent', 'asap', 'critical', 'blocker', 'immediately', 'emergency', 'now',
+  'bug', 'bugs', 'broken', 'blocked', 'blocker', 'fail', 'failed', 'crash', 'crashed',
+  'error', 'errors', 'issue', 'issues', 'delay', 'delayed', 'risk', 'risky', 'stuck',
+  'slow', 'messy', 'hard', 'problem', 'problems', 'urgent', 'critical', 'late', 'behind',
+  'missing', 'confusing', 'unstable', 'regression', 'down',
 ]);
 
 /** Tokenize into lowercase words so keyword matching is whole-word, not substring. */
@@ -36,21 +40,13 @@ function tokenize(text: string): string[] {
   return text.toLowerCase().match(/[a-z]+/g) ?? [];
 }
 
-/** Derive sentiment + priority for a single resource description. */
-export function analyzeVibe(description: string): VibeAnalysis {
+/** Derive sentiment for a single resource description (the mock-AI tag). */
+export function analyzeVibe(description: string): Sentiment {
   const words = tokenize(description);
   const positive = words.filter((w) => POSITIVE.has(w)).length;
   const negative = words.filter((w) => NEGATIVE.has(w)).length;
 
-  const sentiment: Sentiment =
-    positive > negative ? 'positive' : negative > positive ? 'negative' : 'neutral';
-
-  const hasUrgent = words.some((w) => URGENT.has(w));
-  const length = description.trim().length;
-  const priority: Priority =
-    hasUrgent || length > 200 ? 'high' : length > 80 ? 'medium' : 'low';
-
-  return { sentiment, priority };
+  return positive > negative ? 'positive' : negative > positive ? 'negative' : 'neutral';
 }
 
 /** Aggregate per-resource analyses into an overall project "vibe check". */
