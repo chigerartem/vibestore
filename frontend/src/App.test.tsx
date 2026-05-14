@@ -48,7 +48,7 @@ describe('App', () => {
       name: 'Checkout service',
       description: 'shipped a clean launch',
       sentiment: 'positive',
-      priority: 'medium',
+      priority: 'low',
       createdAt: new Date().toISOString(),
     };
 
@@ -79,13 +79,12 @@ describe('App', () => {
     expect(await screen.findByText('Checkout service')).toBeInTheDocument();
     expect(screen.getByText('shipped a clean launch')).toBeInTheDocument();
 
-    // POST carries the typed values plus the default priority from the segmented control.
+    // POST carries exactly the typed values — the backend tags sentiment + priority itself.
     const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
     expect(postCall).toBeTruthy();
     expect(JSON.parse(postCall![1]!.body as string)).toEqual({
       name: 'Checkout service',
       description: 'shipped a clean launch',
-      priority: 'medium',
     });
   });
 

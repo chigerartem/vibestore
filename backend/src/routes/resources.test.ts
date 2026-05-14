@@ -10,18 +10,17 @@ describe('resources API', () => {
     store.clear();
   });
 
-  it('POST then GET — created resource keeps the chosen priority and an auto sentiment', async () => {
+  it('POST then GET — created resource comes back with mock-AI sentiment and priority', async () => {
     const created = await request(app).post('/api/resources').send({
       name: 'Auth service',
-      description: 'We finally shipped a clean working login',
-      priority: 'high',
+      description: 'We finally shipped a clean working login flow',
     });
 
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({
       name: 'Auth service',
-      sentiment: 'positive', // derived by the mock AI
-      priority: 'high', // chosen by the user
+      sentiment: 'positive',
+      priority: 'low',
     });
     expect(created.body.id).toEqual(expect.any(String));
     expect(created.body.createdAt).toEqual(expect.any(String));
@@ -35,8 +34,7 @@ describe('resources API', () => {
   it('GET /api/vibe-check aggregates resources added via POST', async () => {
     await request(app).post('/api/resources').send({
       name: 'Checkout',
-      description: 'the payment flow is broken and crashed',
-      priority: 'high',
+      description: 'urgent: the payment flow is broken and crashed',
     });
 
     const vibe = await request(app).get('/api/vibe-check');
@@ -50,7 +48,7 @@ describe('resources API', () => {
   it('DELETE removes a resource', async () => {
     const created = await request(app)
       .post('/api/resources')
-      .send({ name: 'Temp note', description: 'a quick scratch note', priority: 'low' });
+      .send({ name: 'Temp note', description: 'a quick scratch note' });
 
     const deleted = await request(app).delete(`/api/resources/${created.body.id}`);
     expect(deleted.status).toBe(204);

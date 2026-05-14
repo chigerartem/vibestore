@@ -24,7 +24,6 @@ export interface VibeCheck {
 export interface CreateResourceInput {
   name: string;
   description: string;
-  priority: Priority;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {

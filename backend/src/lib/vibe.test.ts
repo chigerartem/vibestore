@@ -2,29 +2,49 @@ import { describe, it, expect } from 'vitest';
 import { analyzeVibe, summarizeVibe, type VibeAnalysis } from './vibe';
 
 describe('analyzeVibe', () => {
-  it('is positive when positive keywords dominate', () => {
-    expect(analyzeVibe('We shipped a clean, solid launch')).toBe('positive');
+  describe('sentiment', () => {
+    it('is positive when positive keywords dominate', () => {
+      expect(analyzeVibe('We shipped a clean, solid launch').sentiment).toBe('positive');
+    });
+
+    it('is negative when negative keywords dominate', () => {
+      expect(analyzeVibe('The build is broken and crashed with errors').sentiment).toBe('negative');
+    });
+
+    it('is neutral when there are no sentiment keywords', () => {
+      expect(analyzeVibe('A standard internal planning note').sentiment).toBe('neutral');
+    });
+
+    it('is neutral when positive and negative keywords balance out', () => {
+      expect(analyzeVibe('one win but also one bug').sentiment).toBe('neutral');
+    });
+
+    it('matches keywords whole-word, not as substrings', () => {
+      // "winner" contains "win" — it should not count as a positive keyword.
+      expect(analyzeVibe('knowledge shared by a winner').sentiment).toBe('neutral');
+    });
   });
 
-  it('is negative when negative keywords dominate', () => {
-    expect(analyzeVibe('The build is broken and crashed with errors')).toBe('negative');
-  });
+  describe('priority', () => {
+    it('is low for a short description with no urgency', () => {
+      expect(analyzeVibe('quick note').priority).toBe('low');
+    });
 
-  it('is neutral when there are no sentiment keywords', () => {
-    expect(analyzeVibe('A standard internal planning note')).toBe('neutral');
-  });
+    it('is medium for a moderately long description (>80 chars)', () => {
+      expect(analyzeVibe('a'.repeat(120)).priority).toBe('medium');
+    });
 
-  it('is neutral when positive and negative keywords balance out', () => {
-    expect(analyzeVibe('one win but also one bug')).toBe('neutral');
-  });
+    it('is high for a very long description (>200 chars)', () => {
+      expect(analyzeVibe('a'.repeat(240)).priority).toBe('high');
+    });
 
-  it('matches keywords whole-word, not as substrings', () => {
-    // "knowledge" contains "now", "winner" contains "win" — neither should count.
-    expect(analyzeVibe('knowledge shared by a winner')).toBe('neutral');
+    it('is high when an urgency keyword is present, regardless of length', () => {
+      expect(analyzeVibe('urgent').priority).toBe('high');
+    });
   });
 
   it('handles a description with no letters at all', () => {
-    expect(analyzeVibe('12345 !!! ---')).toBe('neutral');
+    expect(analyzeVibe('12345 !!! ---')).toEqual({ sentiment: 'neutral', priority: 'low' });
   });
 });
 

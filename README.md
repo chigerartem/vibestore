@@ -2,9 +2,9 @@
 
 A centralized repository where a team logs project resources (name + description) and gets
 an instant, AI-simulated **Vibe Check** on project health. On save, the backend auto-tags each
-resource with a `sentiment` (mock AI, derived from the description) while the user picks the
-`priority`; a separate endpoint aggregates those tags into an overall status. Built as an
-npm-workspaces monorepo — a REST API (Express) plus a React SPA.
+resource with a `sentiment` and `priority` derived from its description; a separate endpoint
+aggregates those tags into an overall status. Built as an npm-workspaces monorepo —
+a REST API (Express) plus a React SPA.
 
 ## Stack
 
@@ -61,7 +61,7 @@ Base prefix `/api`, JSON in and out. Errors are returned as `{ "error": "<messag
 | Method | Path | Description |
 | --- | --- | --- |
 | GET | `/api/health` | Liveness check — returns `{ "status": "ok", "timestamp": "<ISO>" }` |
-| POST | `/api/resources` | Create a resource. Body `{ "name": string, "description": string, "priority": "low" \| "medium" \| "high" }`. Returns `201` with the created `Resource` (mock-AI `sentiment` attached). `400` on invalid body. |
+| POST | `/api/resources` | Create a resource. Body `{ "name": string, "description": string }`. Returns `201` with the created `Resource` (mock-AI `sentiment` + `priority` attached). `400` on invalid body. |
 | GET | `/api/resources` | List all resources — `200` with `Resource[]`. |
 | DELETE | `/api/resources/:id` | Delete a resource — `204` on success, `404` if the id is unknown. |
 | GET | `/api/vibe-check` | Aggregate health across all resources — `200` with a `VibeCheck`. |
@@ -74,10 +74,12 @@ where `status` is `Quiet \| Buzzing \| Steady \| Needs attention` and `headline`
 
 ### Mock AI logic
 
-`sentiment` is the mock-AI tag — `backend/src/lib/vibe.ts` derives it deterministically from
-the description (no external AI call) by weighing positive vs. negative keywords found in the
-text. `priority` is **not** computed: the user picks it on the form, and it flows through onto
-the stored resource and into the aggregate `VibeCheck` counts.
+`sentiment` and `priority` are computed deterministically from the description by
+`backend/src/lib/vibe.ts` — no external AI call:
+
+- **sentiment** — balance of positive vs. negative keywords found in the text.
+- **priority** — `high` if it contains urgency keywords or is very long (>200 chars),
+  `medium` if moderately long (>80 chars), otherwise `low`.
 
 ## Testing
 

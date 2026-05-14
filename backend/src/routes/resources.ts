@@ -12,10 +12,9 @@ const createResourceSchema = z.object({
     .trim()
     .min(1, 'description is required')
     .max(500, 'description must be 500 characters or fewer'),
-  priority: z.enum(['low', 'medium', 'high']),
 });
 
-// POST /api/resources — validate, auto-tag sentiment, store with the chosen priority.
+// POST /api/resources — validate, then auto-tag sentiment + priority (the mock AI).
 resourcesRouter.post('/resources', (req: Request, res: Response) => {
   const parsed = createResourceSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -24,8 +23,8 @@ resourcesRouter.post('/resources', (req: Request, res: Response) => {
     return;
   }
 
-  const { name, description, priority } = parsed.data;
-  const sentiment = analyzeVibe(description);
+  const { name, description } = parsed.data;
+  const { sentiment, priority } = analyzeVibe(description);
   const resource = store.create({ name, description, sentiment, priority });
   res.status(201).json(resource);
 });
