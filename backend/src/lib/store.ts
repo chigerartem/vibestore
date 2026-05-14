@@ -1,46 +1,46 @@
 import { randomUUID } from 'node:crypto';
+import type { Priority, Sentiment } from './vibe';
 
 /**
- * In-memory store — the default for the test task: zero setup, resets on restart.
- * `Item` is a placeholder shape — replace `name` with the real fields from the task.
- *
- * Need persistence across restarts? Install better-sqlite3
- * (`npm install better-sqlite3 @types/better-sqlite3 -w backend` — installs in
- * seconds via a prebuilt binary) and back these methods with SQL; the interface stays the same.
+ * In-memory store — per the task spec. Zero setup, resets on restart.
+ * `clear()` exists so tests can isolate state between cases.
  */
 
-export interface Item {
+export interface Resource {
   id: string;
   name: string;
+  description: string;
+  sentiment: Sentiment;
+  priority: Priority;
   createdAt: string;
 }
 
-const items = new Map<string, Item>();
+const resources = new Map<string, Resource>();
 
 export const store = {
-  list(): Item[] {
-    return [...items.values()];
+  list(): Resource[] {
+    return [...resources.values()];
   },
 
-  get(id: string): Item | undefined {
-    return items.get(id);
-  },
-
-  create(data: { name: string }): Item {
-    const item: Item = {
+  create(data: {
+    name: string;
+    description: string;
+    sentiment: Sentiment;
+    priority: Priority;
+  }): Resource {
+    const resource: Resource = {
       id: randomUUID(),
       name: data.name,
+      description: data.description,
+      sentiment: data.sentiment,
+      priority: data.priority,
       createdAt: new Date().toISOString(),
     };
-    items.set(item.id, item);
-    return item;
-  },
-
-  delete(id: string): boolean {
-    return items.delete(id);
+    resources.set(resource.id, resource);
+    return resource;
   },
 
   clear(): void {
-    items.clear();
+    resources.clear();
   },
 };
