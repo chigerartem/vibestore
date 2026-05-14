@@ -1,4 +1,30 @@
-// Thin fetch wrapper. All calls target /api/* — Vite proxies them to the backend in dev.
+// The only module that talks to the backend. All calls target /api/* —
+// Vite proxies them to the Express server in dev.
+
+export type Sentiment = 'positive' | 'neutral' | 'negative';
+export type Priority = 'low' | 'medium' | 'high';
+
+export interface Resource {
+  id: string;
+  name: string;
+  description: string;
+  sentiment: Sentiment;
+  priority: Priority;
+  createdAt: string;
+}
+
+export interface VibeCheck {
+  total: number;
+  sentimentCounts: Record<Sentiment, number>;
+  priorityCounts: Record<Priority, number>;
+  status: 'Quiet' | 'Buzzing' | 'Steady' | 'Needs attention';
+  headline: string;
+}
+
+export interface CreateResourceInput {
+  name: string;
+  description: string;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -11,18 +37,20 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(body.error ?? `Request failed: ${res.status}`);
   }
 
-  // 204 No Content (e.g. DELETE) — there is no body to parse.
-  if (res.status === 204) {
-    return undefined as T;
-  }
   return res.json() as Promise<T>;
 }
 
-export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T = void>(path: string) => request<T>(path, { method: 'DELETE' }),
-};
+export function getResources(): Promise<Resource[]> {
+  return request<Resource[]>('/resources');
+}
+
+export function getVibeCheck(): Promise<VibeCheck> {
+  return request<VibeCheck>('/vibe-check');
+}
+
+export function createResource(input: CreateResourceInput): Promise<Resource> {
+  return request<Resource>('/resources', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
