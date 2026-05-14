@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health';
+import { resourcesRouter } from './routes/resources';
 
 /**
  * Builds the Express app without starting a listener.
@@ -13,6 +14,7 @@ export function createApp(): Express {
   app.use(express.json());
 
   app.use('/api', healthRouter);
+  app.use('/api', resourcesRouter);
 
   // 404 — no route matched
   app.use((_req: Request, res: Response) => {
