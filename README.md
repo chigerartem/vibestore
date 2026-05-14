@@ -32,12 +32,26 @@ In dev the frontend proxies `/api/*` to the backend, so there is no CORS setup.
 | `npm run lint` | ESLint across the repo |
 | `npm run typecheck` | type-check both packages |
 | `npm run build` | production build of both packages |
+| `npm run test:coverage -w backend` | backend tests with a coverage report (utility/logic kept ≥ 80%) |
 
 ## Layout
 
 ```
-backend/    REST API (Express + TypeScript)
-frontend/   SPA (React + Vite + TypeScript + Tailwind)
+backend/
+  src/
+    app.ts            createApp() — wires middleware + routers (no listen)
+    index.ts          starts the server
+    lib/
+      vibe.ts         mock-AI logic: analyzeVibe + summarizeVibe (pure, unit-tested)
+      store.ts        in-memory resource store
+    routes/
+      resources.ts    POST /resources, GET /resources, GET /vibe-check
+      health.ts       GET /health
+frontend/
+  src/
+    App.tsx           root — owns state, fetches on mount, refetches after a create
+    lib/api.ts        the only module that talks to the backend
+    components/       ResourceForm · ResourceList · VibeCheck
 ```
 
 ## API
@@ -65,3 +79,13 @@ where `status` is `Quiet \| Buzzing \| Steady \| Needs attention` and `headline`
 - **sentiment** — balance of positive vs. negative keywords found in the text.
 - **priority** — `high` if it contains urgency keywords or is very long (>200 chars),
   `medium` if moderately long (>80 chars), otherwise `low`.
+
+## Testing
+
+- **Backend unit** — `backend/src/lib/vibe.test.ts` covers the mock-AI summary logic.
+- **Backend integration** — `backend/src/routes/resources.test.ts` verifies the POST → GET
+  cycle (and the `400` path) with supertest.
+- **Frontend component** — `frontend/src/App.test.tsx` types into the form, submits, and
+  asserts the new resource appears in the list.
+- `npm run test:coverage -w backend` enforces an 80% threshold on `backend/src/lib`
+  (the utility/logic) — currently 100%.
