@@ -4,6 +4,11 @@
 
 **Log project resources and get an instant, AI-simulated read on project health — a tested, full-stack prototype in one repo.**
 
+**▶️ Live demo:** https://chigerartem.github.io/vibestore/
+
+<sub>The hosted demo runs the same mock-AI logic client-side, so it needs no server — full-stack details below.</sub>
+
+[![Live demo](https://img.shields.io/badge/live_demo-online-22c55e?logo=githubpages&logoColor=white)](https://chigerartem.github.io/vibestore/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)

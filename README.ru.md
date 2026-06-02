@@ -4,6 +4,11 @@
 
 **Складывай ресурсы проекта и мгновенно получай AI-симулированную оценку «здоровья» проекта — протестированный full-stack-прототип в одном репозитории.**
 
+**▶️ Живое демо:** https://chigerartem.github.io/vibestore/
+
+<sub>Размещённое демо гоняет ту же мок-AI логику прямо в браузере — сервер не нужен; про full-stack — ниже.</sub>
+
+[![Live demo](https://img.shields.io/badge/live_demo-online-22c55e?logo=githubpages&logoColor=white)](https://chigerartem.github.io/vibestore/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
